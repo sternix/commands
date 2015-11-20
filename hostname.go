@@ -14,20 +14,10 @@ import (
 	"syscall"
 )
 
-func setHostname(hostname string) error {
-	hname := C.CString(hostname)
-	_, err := C.sethostname(hname, C.int(C.strlen(hname)))
-	return err
-}
-
-func getHostname() (hname string, err error) {
-	hname, err = syscall.Sysctl("kern.hostname")
-	return
-}
-
 func main() {
-	f_flag := flag.Bool("f", true, "")
-	s_flag := flag.Bool("s", false, "")
+	f_flag := flag.Bool("f", true, "Include domain information in the printed name. This is the default behavior.")
+	s_flag := flag.Bool("s", false, "Trim off any domain information from the printed name.")
+	flag.Usage = usage
 
 	flag.Parse()
 
@@ -63,4 +53,15 @@ func main() {
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: hostname [-fs] [name-of-host]")
 	os.Exit(1)
+}
+
+func setHostname(hostname string) error {
+	hname := C.CString(hostname)
+	_, err := C.sethostname(hname, C.int(C.strlen(hname)))
+	return err
+}
+
+func getHostname() (hname string, err error) {
+	hname, err = syscall.Sysctl("kern.hostname")
+	return
 }
