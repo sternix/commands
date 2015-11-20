@@ -13,11 +13,11 @@ func main() {
 	var (
 		flags   int = (os.O_WRONLY | os.O_CREATE)
 		files   []io.Writer
-		exitval int = 0
+		exitval int
 	)
 
-	interruptFlag := flag.Bool("i", false, "")
-	appendFlag := flag.Bool("a", false, "")
+	appendFlag := flag.Bool("a", false, "Append the output to the files rather than overwriting them.")
+	interruptFlag := flag.Bool("i", false, "Ignore the SIGINT signal.")
 	flag.Usage = usage
 
 	flag.Parse()
