@@ -6,19 +6,9 @@ import (
 	"os"
 )
 
-func usage() {
-	fmt.Fprintf(os.Stderr, "usage: printenv [name]\n")
-}
-
 func main() {
-	help := flag.Bool("?", false, "")
+	flag.Usage = usage
 	flag.Parse()
-
-	if *help {
-		usage()
-		os.Exit(0)
-	}
-
 
 	if flag.NArg() == 0 {
 		environ := os.Environ()
@@ -30,6 +20,11 @@ func main() {
 			fmt.Println(env)
 		}
 	}
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "usage: printenv [name]\n")
+	os.Exit(0)
 }
 
 // /usr/bin/printenv
