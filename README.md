@@ -1,2 +1,3 @@
 # commands
-FreeBSD command written in go - Experimental
+FreeBSD commands written in go - Experimental
+Descriptions taken from FreeBSD man pages
