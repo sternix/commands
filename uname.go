@@ -20,21 +20,21 @@ const (
 )
 
 func main() {
-	allFlag := flag.Bool("a", false, "")
-	identFlag := flag.Bool("i", false, "")
-	platformFlag := flag.Bool("m", false, "")
-	hostnameFlag := flag.Bool("n", false, "")
-	osnameFlag := flag.Bool("o", false, "")
-	archFlag := flag.Bool("p", false, "")
-	releaseFlag := flag.Bool("r", false, "")
-	sysnameFlag := flag.Bool("s", false, "")
-	versionFlag := flag.Bool("v", false, "")
-	kernversFlag := flag.Bool("K", false, "")
-	helpFlag := flag.Bool("h", false, "")
+	allFlag := flag.Bool("a", false, "Behave as though the options -m, -n, -r, -s, and -v were specified.")
+	identFlag := flag.Bool("i", false, "Write the kernel ident to standard output.")
+	platformFlag := flag.Bool("m", false, "Write the type of the current hardware platform to standard output.")
+	hostnameFlag := flag.Bool("n", false, "Write the name of the system to standard output.")
+	osnameFlag := flag.Bool("o", false, "This is a synonym for the -s option, for compatibility with other systems.")
+	archFlag := flag.Bool("p", false, "Write the type of the machine processor architecture to standard output.")
+	releaseFlag := flag.Bool("r", false, "Write the current release level of the operating system to standard output.")
+	sysnameFlag := flag.Bool("s", false, "Write the name of the operating system implementation to standard output.")
+	versionFlag := flag.Bool("v", false, "Write the version level of this release of the operating system to standard output.")
+	kernversFlag := flag.Bool("K", false, "Write the FreeBSD version of the kernel.")
+	flag.Usage = usage
 
 	flag.Parse()
 
-	var flags int = 0
+	var flags int
 
 	if *allFlag {
 		flags |= (MFLAG | NFLAG | RFLAG | SFLAG | VFLAG)
@@ -70,10 +70,6 @@ func main() {
 
 	if *kernversFlag {
 		flags |= KFLAG
-	}
-
-	if *helpFlag {
-		usage()
 	}
 
 	if flags == 0 {
