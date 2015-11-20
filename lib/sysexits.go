@@ -1,6 +1,6 @@
 package sysexits
 
-const {
+const (
 	OK		int = 0		/* successful termination */
 	BASE		int = 64	/* base value for error messages */
 	USAGE		int = 64	/* command line usage error */
@@ -19,4 +19,4 @@ const {
 	NOPERM		int = 77	/* permission denied */
 	CONFIG		int = 78	/* configuration error */
 	MAX		int = 78	/* maximum listed value */
-}
+)
