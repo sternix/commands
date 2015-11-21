@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/sternix/commands/lib"
+	"github.com/sternix/commands/lib/sysexits"
 	"os"
 	"syscall"
 )
