@@ -3,104 +3,115 @@ package kenv
 import (
 	"syscall"
 	"unsafe"
-	"fmt"
 )
-
-/*
-390     AUE_NULL        STD     { int kenv(int what, const char *name, char *value, int len); }
-*/
 
 const (
-	SYS_KENV   = 390
-	GET        = 0
-	SET        = 1
-	UNSET      = 2
-	DUMP       = 3
+	SYS_KENV = 390
 
-	MNAMELEN   = 128     /* Maximum name length (for the syscall) */
-	MVALLEN    = 128     /* Maximum value length (for the syscall) */
+	GET   = 0
+	SET   = 1
+	UNSET = 2
+	DUMP  = 3
+
+//	MNAMELEN = 128 /* Maximum name length (for the syscall) */
+//	MVALLEN  = 128 /* Maximum value length (for the syscall) */
 )
 
-func Get(name string) (string , error) {
-	kenv(GET,name,"")
-	return "",nil
+func Get(name string) ([]byte, error) {
+	buf := make([]byte, 1024)
+
+	if err := kenv(GET, name, buf); err != nil {
+		return nil, err
+	} else {
+		return buf, nil
+	}
+
 }
 
-func Set(name string , value string) error {
-	kenv(SET,name,"")
-	return nil
+func Set(name string, value string) error {
+	return kenv(SET, name, []byte(value))
 }
 
 func Unset(name string) error {
-	kenv(UNSET,name,"")
-	return nil
+	return kenv(UNSET, name, nil)
 }
 
-func Dump() string {
-	kenv(DUMP,"","")
-	return ""
-}
+func Dump() ([]byte, error) {
+	_null := unsafe.Pointer(nil)
 
-func kenv(action int , name string, value string) (err error) {
-	/*
-	var (
-		_p0 *byte
-		_p1 *byte
-		e error
-	)
-	*/
-
-/*
-	if action == GET {
-	
-	}
-
-	if action == SET {
-	
-	}
-
-	if action == UNSET {
-	
-	}
-
-*/
-	if action == DUMP {
-		_null := unsafe.Pointer(uintptr(0))
-		if envlen , err := kenv_sys(DUMP, _null, _null, 0); err != nil {
-			fmt.Printf("%v\n",err)
+	if envlen, e := kenv_sys(DUMP, _null, _null, 0); e != nil {
+		return nil, e
+	} else {
+		buf := make([]byte, envlen+1)
+		if e2 := kenv(DUMP, "", buf); e2 != nil {
+			return nil, e2
 		} else {
-			buf := make([]byte , envlen + 1)
-//			fmt.Printf("len : %d : \n",len(buf))
-			kenv_sys(DUMP,_null,unsafe.Pointer(&buf[0]) , envlen + 1)
-			fmt.Printf("%s\n",string(buf))
+			return buf, nil
+		}
+	}
+}
+
+func kenv(action int, name string, value []byte) (err error) {
+
+	if action == GET {
+		if _name, e := syscall.BytePtrFromString(name); e != nil {
+			err = e
+			return
+		} else {
+			if _, e2 := kenv_sys(GET, unsafe.Pointer(_name), unsafe.Pointer(&value[0]), len(value)); e2 != nil {
+				err = e2
+				return
+			} else {
+				return nil
+			}
 		}
 	}
 
-	/*
-	_p0 , e = syscall.BytePtrFromString(name)
-	if e != nil {
-		err = e
-		return
+	if action == SET {
+		if _name, e := syscall.BytePtrFromString(name); e != nil {
+			err = e
+			return
+		} else {
+			if _, e2 := kenv_sys(SET, unsafe.Pointer(_name), unsafe.Pointer(&value[0]), len(value)); e2 != nil {
+				err = e2
+				return
+			} else {
+				return nil
+			}
+		}
+	}
+	if action == UNSET {
+		_null := unsafe.Pointer(nil)
+
+		if _name, e := syscall.BytePtrFromString(name); e != nil {
+			err = e
+			return
+		} else {
+			if _, e2 := kenv_sys(UNSET, unsafe.Pointer(_name), _null, 0); e2 != nil {
+				err = e2
+				return
+			} else {
+				return nil
+			}
+		}
 	}
 
-	_p1 = syscall.BytePtrFromString(value)
-	if e != nil {
-		err = e
-		return
+	if action == DUMP {
+		_null := unsafe.Pointer(nil)
+
+		if _, e := kenv_sys(DUMP, _null, unsafe.Pointer(&value[0]), len(value)); e != nil {
+			err = e
+			return
+		} else {
+			return nil
+		}
 	}
-	*/
 
 	return nil
 }
 
-/*
-// func Syscall(trap int64, a1, a2, a3 int64) (r1, r2, err int64);
-// func Syscall6(trap int64, a1, a2, a3, a4, a5, a6 int64) (r1, r2, err int64);
-// func Syscall9(trap int64, a1, a2, a3, a4, a5, a6, a7, a8, a9 int64) (r1, r2, err int64)
-*/
-
-func kenv_sys(what int ,name unsafe.Pointer, value unsafe.Pointer, size int) (ret int , err error) {
-	r1 , _ , e := syscall.Syscall6(SYS_KENV,uintptr(what),uintptr(name),uintptr(value),uintptr(size),0,0)
+func kenv_sys(what int, name unsafe.Pointer, value unsafe.Pointer, size int) (ret int, err error) {
+	r1, _, e := syscall.Syscall6(SYS_KENV, uintptr(what), uintptr(name), uintptr(value), uintptr(size), 0, 0)
 	if e != 0 {
 		err = syscall.Errno(e)
 		ret = -1
