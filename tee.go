@@ -13,7 +13,7 @@ func main() {
 	var (
 		flags   int = (os.O_WRONLY | os.O_CREATE)
 		exitval int
-		files   = []io.Writer{os.Stdout}
+		files   []io.Writer = []io.Writer{os.Stdout}
 	)
 
 	appendFlag := flag.Bool("a", false, "Append the output to the files rather than overwriting them.")
