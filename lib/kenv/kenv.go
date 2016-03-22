@@ -19,17 +19,18 @@ func Get(name string) ([]byte, error) {
 		buf  = make([]byte, 1024)
 		bptr *byte
 		err  error
+		size int
 	)
 
 	if bptr, err = syscall.BytePtrFromString(name); err != nil {
 		return nil, err
 	}
 
-	if _, err = kenv_sys(GET, unsafe.Pointer(bptr), unsafe.Pointer(&buf[0]), len(buf)); err != nil {
+	if size, err = kenv_sys(GET, unsafe.Pointer(bptr), unsafe.Pointer(&buf[0]), len(buf)); err != nil {
 		return nil, err
 	}
 
-	return buf, nil
+	return buf[:size], nil
 }
 
 func Set(name string, value string) error {
@@ -80,6 +81,10 @@ func Dump() ([]byte, error) {
 	buf := make([]byte, envlen+1)
 	if _, err = kenv_sys(DUMP, unsafe.Pointer(nil), unsafe.Pointer(&buf[0]), len(buf)); err != nil {
 		return nil, err
+	}
+
+	if buf[len(buf)-1] == '\x00' {
+		buf = buf[:len(buf)-1]
 	}
 
 	return buf, nil
