@@ -5,6 +5,10 @@ import (
 	"unsafe"
 )
 
+import (
+	"github.com/sternix/commands/lib"
+)
+
 const (
 	SYS_KENV = 390
 
@@ -14,7 +18,7 @@ const (
 	DUMP  = 3
 )
 
-func Get(name string) ([]byte, error) {
+func Get(name string) (string, error) {
 	var (
 		buf  = make([]byte, 1024)
 		bptr *byte
@@ -23,14 +27,20 @@ func Get(name string) ([]byte, error) {
 	)
 
 	if bptr, err = syscall.BytePtrFromString(name); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if size, err = kenv_sys(GET, unsafe.Pointer(bptr), unsafe.Pointer(&buf[0]), len(buf)); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return buf[:size], nil
+	buf = buf[:size]
+	//remove C null term
+	if buf[len(buf)-1] == '\x00' {
+		buf = buf[:len(buf)-1]
+	}
+
+	return string(buf), nil
 }
 
 func Set(name string, value string) error {
@@ -68,26 +78,30 @@ func Unset(name string) error {
 	return nil
 }
 
-func Dump() ([]byte, error) {
+func Dump() ([]string, error) {
 	var (
 		envlen int
 		err    error
 	)
 
+	// get size of the buffer
 	if envlen, err = kenv_sys(DUMP, unsafe.Pointer(nil), unsafe.Pointer(nil), 0); err != nil {
 		return nil, err
 	}
 
+	// get envs to buffer
 	buf := make([]byte, envlen+1)
 	if _, err = kenv_sys(DUMP, unsafe.Pointer(nil), unsafe.Pointer(&buf[0]), len(buf)); err != nil {
 		return nil, err
 	}
 
+	// remove last null term
 	if buf[len(buf)-1] == '\x00' {
 		buf = buf[:len(buf)-1]
 	}
 
-	return buf, nil
+	// remove all c null term character (\x00) from string
+	return lib.CStrToStrSlice(buf), nil
 }
 
 func kenv_sys(what int, name unsafe.Pointer, value unsafe.Pointer, size int) (int, error) {

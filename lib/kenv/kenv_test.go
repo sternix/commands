@@ -1,7 +1,6 @@
 package kenv_test
 
 import (
-	"bytes"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -12,28 +11,6 @@ import (
 import (
 	"github.com/sternix/commands/lib/kenv"
 )
-
-func NullTermToStrings(b []byte) []string {
-	var s []string
-	for {
-		i := bytes.IndexByte(b, '\x00')
-		if i == -1 {
-			break
-		}
-		s = append(s, string(b[0:i]))
-		b = b[i+1:]
-	}
-	return s
-}
-
-func TrimStrTerm(val []byte) string {
-	i := bytes.IndexByte(val, '\x00')
-	if i != -1 {
-		val = val[:i]
-	}
-
-	return string(val)
-}
 
 func kenvsFromCmd(t *testing.T) []string {
 	out, err := exec.Command("/bin/kenv").Output()
@@ -70,7 +47,7 @@ func TestKenvGet(t *testing.T) {
 			t.Error(err)
 		}
 
-		if TrimStrTerm(get) != v {
+		if get != v {
 			t.Errorf("k:%q = get:%q , expected v:%q", k, get, v)
 		}
 	}
@@ -79,13 +56,13 @@ func TestKenvGet(t *testing.T) {
 func TestKenvDump(t *testing.T) {
 	fromCmd := kenvsFromCmd(t)
 
-	buf, err := kenv.Dump()
+	kenvs, err := kenv.Dump()
 	if err != nil {
 		t.Error(err)
 	}
 
 	var fromLib []string
-	for _, item := range NullTermToStrings(buf) {
+	for _, item := range kenvs {
 		keyval := strings.Split(item, "=")
 		if len(keyval) != 2 {
 			t.Errorf("%s has different format than key=val", keyval)
