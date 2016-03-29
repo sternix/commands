@@ -85,6 +85,7 @@ func TestKenvDump(t *testing.T) {
 	}
 
 	fromCmd := strings.Split(string(out), "\n")
+	fromCmd = fromCmd[:len(fromCmd)-1] //remove last newline
 
 	buf, err := kenv.Dump()
 	if err != nil {
@@ -95,21 +96,16 @@ func TestKenvDump(t *testing.T) {
 	for _, item := range NullTermToStrings(buf) {
 		keyval := strings.Split(item, "=")
 		if len(keyval) != 2 {
-			t.Errorf("%s has different fromat than key=val", keyval)
+			t.Errorf("%s has different format than key=val", keyval)
 		}
 		fromLib = append(fromLib, fmt.Sprintf("%s=\"%s\"", keyval[0], keyval[1]))
 	}
 
-	// +1 for newline
-	if (len(fromLib) + 1) != len(fromCmd) {
+	if len(fromLib) != len(fromCmd) {
 		t.Errorf("cmd has %d item but lib has %d", len(fromCmd), len(fromLib))
 	}
 
 	for i, ke := range fromCmd {
-		if ke == "" { // newline
-			continue
-		}
-
 		if fromLib[i] != ke {
 			t.Errorf("lib %s different than %s", fromLib[i], ke)
 		}
