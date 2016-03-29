@@ -13,11 +13,8 @@ import (
 	"github.com/sternix/commands/lib/kenv"
 )
 
-const kenvCmd = "/bin/kenv"
-
 func NullTermToStrings(b []byte) []string {
 	var s []string
-
 	for {
 		i := bytes.IndexByte(b, '\x00')
 		if i == -1 {
@@ -38,19 +35,21 @@ func TrimStrTerm(val []byte) string {
 	return string(val)
 }
 
-func TestKenvGet(t *testing.T) {
-	// exec os command
-	out, err := exec.Command(kenvCmd).Output()
+func kenvsFromCmd(t *testing.T) []string {
+	out, err := exec.Command("/bin/kenv").Output()
 	if err != nil {
 		t.Error(err)
 	}
 
+	kenvs := strings.Split(string(out), "\n")
+	kenvs = kenvs[:len(kenvs)-1] //remove last newline
+	return kenvs
+}
+
+func TestKenvGet(t *testing.T) {
 	// get key and values from os commands output
 	kenvs := make(map[string]string)
-	for _, ke := range strings.Split(string(out), "\n") {
-		if ke == "" {
-			continue
-		}
+	for _, ke := range kenvsFromCmd(t) {
 		// items in the form key="value"
 		strs := strings.Split(ke, "=")
 		if len(strs) != 2 {
@@ -78,14 +77,7 @@ func TestKenvGet(t *testing.T) {
 }
 
 func TestKenvDump(t *testing.T) {
-	// exec os command
-	out, err := exec.Command(kenvCmd).Output()
-	if err != nil {
-		t.Error(err)
-	}
-
-	fromCmd := strings.Split(string(out), "\n")
-	fromCmd = fromCmd[:len(fromCmd)-1] //remove last newline
+	fromCmd := kenvsFromCmd(t)
 
 	buf, err := kenv.Dump()
 	if err != nil {
