@@ -1,11 +1,20 @@
 package main
 
 import (
-	"fmt"
-	"github.com/sternix/commands/lib/sysexits"
+	"log"
 	"os"
 	"syscall"
 )
+
+import (
+	"github.com/sternix/commands/lib/sysexits"
+)
+
+
+func init() {
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+}
 
 func main() {
 	var rval int = sysexits.OK
@@ -17,29 +26,25 @@ func main() {
 
 	for _, f := range args[1:] {
 		if fd, err := syscall.Open(f, syscall.O_RDONLY, 0777); err != nil {
-			fmt.Fprintf(os.Stderr, "open %s: %v\n", f, err)
+			log.Printf("open %s: %v\n", f, err)
 			if rval == sysexits.OK {
 				rval = sysexits.NOINPUT
 			}
-
 			continue
 		} else {
 			if errf := syscall.Fsync(fd); errf != nil {
-				fmt.Fprintf(os.Stderr, "fsync %s:%v\n", f, errf)
+				log.Printf("fsync %s:%v\n", f, errf)
 				if rval == sysexits.OK {
 					rval = sysexits.OSERR
 				}
 			}
-
 			syscall.Close(fd)
 		}
-
 	}
-
 	os.Exit(rval)
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: fsync file ...\n")
+	log.Println("usage: fsync file ...")
 	os.Exit(sysexits.USAGE)
 }

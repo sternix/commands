@@ -20,12 +20,13 @@ var (
 	sflag = flag.Bool("s", false, "Trim off any domain information from the printed name.")
 )
 
-func main() {
-	log.SetOutput(os.Stderr)
+func init() {
 	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+}
 
+func main() {
 	flag.Usage = usage
-
 	flag.Parse()
 
 	*fflag = true

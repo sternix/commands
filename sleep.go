@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -9,9 +10,17 @@ import (
 	"time"
 )
 
+func init() {
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+}
+
 func main() {
-	var seconds time.Duration
-	var orjSec uint
+	var (
+		seconds time.Duration
+		orjSec  uint
+	)
+
 	args := os.Args
 
 	if len(args) != 2 {
@@ -42,6 +51,5 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: sleep seconds\n")
-	os.Exit(1)
+	log.Fatalln("usage: sleep seconds")
 }

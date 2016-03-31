@@ -3,8 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
+
+func init() {
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+}
 
 func main() {
 	flag.Usage = usage
@@ -23,7 +29,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: printenv [name]\n")
+	log.Println("usage: printenv [name]")
 	os.Exit(0)
 }
 

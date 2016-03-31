@@ -2,12 +2,17 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+func init() {
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+}
 
 func main() {
 	var (
@@ -38,7 +43,7 @@ func main() {
 		}
 
 		if f, err := os.OpenFile(arg, flags, os.ModePerm); err != nil {
-			fmt.Fprintf(os.Stderr, "%s - %v", arg, err)
+			log.Printf("%s - %v", arg, err)
 			exitval = 1
 		} else {
 			defer f.Close()
@@ -47,7 +52,7 @@ func main() {
 	}
 
 	if _, err := io.Copy(io.MultiWriter(files...), os.Stdin); err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+		log.Printf("%v", err)
 		exitval = 1
 	}
 
@@ -55,6 +60,5 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: tee [-ai] [file ...]")
-	os.Exit(1)
+	log.Fatalln("usage: tee [-ai] [file ...]")
 }

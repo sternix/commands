@@ -33,12 +33,13 @@ var (
 	kernversFlag = flag.Bool("K", false, "Write the FreeBSD version of the kernel.")
 )
 
-func main() {
+func init() {
 	log.SetFlags(0)
 	log.SetOutput(os.Stderr)
+}
 
+func main() {
 	flag.Usage = usage
-
 	flag.Parse()
 
 	var flags int
