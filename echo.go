@@ -1,29 +1,22 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"os"
+	"fmt"
 )
 
 func main() {
 	omitNewLine := flag.Bool("n", false, "Do not print the trailing newline character.")
-
 	flag.Parse()
 
-	var buffer bytes.Buffer
-
 	var sep string
-
-	for i := 0; i < flag.NArg(); i++ {
-		buffer.WriteString(sep)
-		buffer.WriteString(flag.Arg(i))
+	for i := 1; i < flag.NArg(); i++ {
+		fmt.Print(sep)
+		fmt.Print(flag.Arg(i))
 		sep = " "
 	}
 
 	if !*omitNewLine {
-		buffer.WriteString("\n")
+		fmt.Println()
 	}
-
-	buffer.WriteTo(os.Stdout)
 }
