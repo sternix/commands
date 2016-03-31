@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"syscall"
@@ -19,17 +20,23 @@ const (
 	KFLAG
 )
 
+var (
+	allFlag      = flag.Bool("a", false, "Behave as though the options -m, -n, -r, -s, and -v were specified.")
+	identFlag    = flag.Bool("i", false, "Write the kernel ident to standard output.")
+	platformFlag = flag.Bool("m", false, "Write the type of the current hardware platform to standard output.")
+	hostnameFlag = flag.Bool("n", false, "Write the name of the system to standard output.")
+	osnameFlag   = flag.Bool("o", false, "This is a synonym for the -s option, for compatibility with other systems.")
+	archFlag     = flag.Bool("p", false, "Write the type of the machine processor architecture to standard output.")
+	releaseFlag  = flag.Bool("r", false, "Write the current release level of the operating system to standard output.")
+	sysnameFlag  = flag.Bool("s", false, "Write the name of the operating system implementation to standard output.")
+	versionFlag  = flag.Bool("v", false, "Write the version level of this release of the operating system to standard output.")
+	kernversFlag = flag.Bool("K", false, "Write the FreeBSD version of the kernel.")
+)
+
 func main() {
-	allFlag := flag.Bool("a", false, "Behave as though the options -m, -n, -r, -s, and -v were specified.")
-	identFlag := flag.Bool("i", false, "Write the kernel ident to standard output.")
-	platformFlag := flag.Bool("m", false, "Write the type of the current hardware platform to standard output.")
-	hostnameFlag := flag.Bool("n", false, "Write the name of the system to standard output.")
-	osnameFlag := flag.Bool("o", false, "This is a synonym for the -s option, for compatibility with other systems.")
-	archFlag := flag.Bool("p", false, "Write the type of the machine processor architecture to standard output.")
-	releaseFlag := flag.Bool("r", false, "Write the current release level of the operating system to standard output.")
-	sysnameFlag := flag.Bool("s", false, "Write the name of the operating system implementation to standard output.")
-	versionFlag := flag.Bool("v", false, "Write the version level of this release of the operating system to standard output.")
-	kernversFlag := flag.Bool("K", false, "Write the FreeBSD version of the kernel.")
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+
 	flag.Usage = usage
 
 	flag.Parse()
@@ -116,8 +123,7 @@ func isEnvSet(flg string) (bool, string) {
 func getSysctl(sysctlName string) (val string) {
 	var err error
 	if val, err = syscall.Sysctl(sysctlName); err != nil {
-		fmt.Fprintf(os.Stderr, "%s - %v\n", sysctlName, err)
-		os.Exit(1)
+		log.Fatalf("%s - %v\n", sysctlName, err)
 	}
 
 	return val
@@ -125,8 +131,7 @@ func getSysctl(sysctlName string) (val string) {
 
 func getSysctlUint32AsString(sysctlName string) (val string) {
 	if ret, err := syscall.SysctlUint32(sysctlName); err != nil {
-		fmt.Fprintf(os.Stderr, "%s - %v", sysctlName, err)
-		os.Exit(1)
+		log.Fatalf("%s - %v", sysctlName, err)
 	} else {
 		val = strconv.FormatUint(uint64(ret), 10)
 	}
@@ -166,6 +171,5 @@ func getVersion(envVar, sysctlName string) string {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: uname [-aiKmnoprsUv]\n")
-	os.Exit(1)
+	log.Fatalln("usage: uname [-aiKmnoprsUv]")
 }

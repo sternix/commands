@@ -9,19 +9,26 @@ import "C"
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"syscall"
 )
 
+var (
+	fflag = flag.Bool("f", true, "Include domain information in the printed name. This is the default behavior.")
+	sflag = flag.Bool("s", false, "Trim off any domain information from the printed name.")
+)
+
 func main() {
-	f_flag := flag.Bool("f", true, "Include domain information in the printed name. This is the default behavior.")
-	s_flag := flag.Bool("s", false, "Trim off any domain information from the printed name.")
+	log.SetOutput(os.Stderr)
+	log.SetFlags(0)
+
 	flag.Usage = usage
 
 	flag.Parse()
 
-	*f_flag = true
+	*fflag = true
 
 	if flag.NArg() > 1 {
 		usage()
@@ -29,17 +36,15 @@ func main() {
 
 	if flag.NArg() == 1 {
 		if err := setHostname(flag.Arg(0)); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			log.Fatalln(err)
 		}
 	} else {
 		hostname, err := getHostname()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			log.Fatalln(err)
 		}
 
-		if *s_flag {
+		if *sflag {
 			parts := strings.Split(hostname, ".")
 			if len(parts) > 1 {
 				hostname = parts[0]
@@ -51,8 +56,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: hostname [-fs] [name-of-host]")
-	os.Exit(1)
+	log.Fatalln("usage: hostname [-fs] [name-of-host]")
 }
 
 func setHostname(hostname string) error {
@@ -61,7 +65,6 @@ func setHostname(hostname string) error {
 	return err
 }
 
-func getHostname() (hname string, err error) {
-	hname, err = syscall.Sysctl("kern.hostname")
-	return
+func getHostname() (string, error) {
+	return syscall.Sysctl("kern.hostname")
 }
