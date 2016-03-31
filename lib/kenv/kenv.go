@@ -45,16 +45,20 @@ func Get(name string) (string, error) {
 
 func Set(name string, value string) error {
 	var (
-		bptr *byte
-		err  error
-		bslc []byte = []byte(value)
+		bptrname  *byte
+		bptrvalue *byte
+		err       error
 	)
 
-	if bptr, err = syscall.BytePtrFromString(name); err != nil {
+	if bptrname, err = syscall.BytePtrFromString(name); err != nil {
 		return err
 	}
 
-	if _, err = kenv_sys(SET, unsafe.Pointer(bptr), unsafe.Pointer(&bslc[0]), len(bslc)); err != nil {
+	if bptrvalue, err = syscall.BytePtrFromString(value); err != nil {
+		return err
+	}
+
+	if _, err = kenv_sys(SET, unsafe.Pointer(bptrname), unsafe.Pointer(bptrvalue), len(value)+1); err != nil {
 		return err
 	}
 
