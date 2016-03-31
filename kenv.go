@@ -20,31 +20,33 @@ var (
 	vflag = flag.Bool("v", false, "Verbose")
 )
 
-func main() {
-	flag.Parse()
+func init() {
 	log.SetFlags(0)
 	log.SetOutput(os.Stderr)
+}
 
+func main() {
+	flag.Parse()
 	args := flag.Args()
 	if len(args) == 1 {
 		if keyval := strings.Split(args[0], "="); len(keyval) == 2 {
 			if err := set(keyval[0], keyval[1]); err != nil {
-				logErrorAndExit(fmt.Sprintf("Unable to set %s to %s", keyval[0], keyval[1]), err)
+				logErrorAndExit(err)
 			}
 		} else {
 			if *uflag {
 				if err := unset(args[0]); err != nil {
-					logErrorAndExit(fmt.Sprintf("Unable to unset %s", args[0]), err)
+					logErrorAndExit(err)
 				}
 			} else {
 				if err := get(args[0]); err != nil {
-					logErrorAndExit(fmt.Sprintf("Unable to get %s", args[0]), err)
+					logErrorAndExit(err)
 				}
 			}
 		}
 	} else {
 		if err := dump(); err != nil {
-			logErrorAndExit("Unable to dump kenv", err)
+			logErrorAndExit(err)
 		}
 	}
 }
@@ -52,7 +54,7 @@ func main() {
 func dump() error {
 	kenvs, err := kenv.Dump()
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to dump kenv: %v", err)
 	}
 
 	for _, item := range kenvs {
@@ -79,7 +81,7 @@ func dump() error {
 func get(name string) error {
 	value, err := kenv.Get(name)
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to get %s: %v", name, err)
 	}
 
 	if *vflag {
@@ -92,20 +94,22 @@ func get(name string) error {
 
 func set(key string, value string) error {
 	if err := kenv.Set(key, value); err != nil {
-		return err
+		return fmt.Errorf("Unable to set %s to %s: %v", key, value, err)
 	}
 	fmt.Printf("%s=\"%s\"\n", key, value)
 	return nil
 }
 
 func unset(key string) error {
-	return kenv.Unset(key)
+	if err := kenv.Unset(key); err != nil {
+		return fmt.Errorf("Unable to unset %s: %v", key, err)
+	}
+	return nil
 }
 
-func logErrorAndExit(msg string, err error) {
+func logErrorAndExit(err error) {
 	if !*qflag {
-		log.Printf("%s: %v", msg, err)
+		log.Println(err)
 	}
-
 	os.Exit(-1)
 }
