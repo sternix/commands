@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	cflag = flag.Bool("c", false, "Clear kernel buffer")
+	cflag = flag.Bool("c", false, "Clear kernel message buffer")
 )
 
 func isKernSyslogEntry(fac int64) bool {
