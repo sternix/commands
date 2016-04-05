@@ -1,18 +1,15 @@
 package main
 
-/*
-#include <unistd.h>
-#include <string.h>
-*/
-import "C"
-
 import (
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strings"
-	"syscall"
+)
+
+import (
+	"github.com/sternix/commands/lib/sysctl"
 )
 
 var (
@@ -61,11 +58,9 @@ func usage() {
 }
 
 func setHostname(hostname string) error {
-	hname := C.CString(hostname)
-	_, err := C.sethostname(hname, C.int(C.strlen(hname)))
-	return err
+	return sysctl.SetString("kern.hostname", hostname)
 }
 
 func getHostname() (string, error) {
-	return syscall.Sysctl("kern.hostname")
+	return sysctl.ByName("kern.hostname")
 }
