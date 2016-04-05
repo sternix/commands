@@ -6,7 +6,10 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"syscall"
+)
+
+import (
+	"github.com/sternix/commands/lib/sysctl"
 )
 
 const (
@@ -123,7 +126,7 @@ func isEnvSet(flg string) (bool, string) {
 
 func getSysctl(sysctlName string) (val string) {
 	var err error
-	if val, err = syscall.Sysctl(sysctlName); err != nil {
+	if val, err = sysctl.ByName(sysctlName); err != nil {
 		log.Fatalf("%s - %v\n", sysctlName, err)
 	}
 
@@ -131,7 +134,7 @@ func getSysctl(sysctlName string) (val string) {
 }
 
 func getSysctlUint32AsString(sysctlName string) (val string) {
-	if ret, err := syscall.SysctlUint32(sysctlName); err != nil {
+	if ret, err := sysctl.Uint32(sysctlName); err != nil {
 		log.Fatalf("%s - %v", sysctlName, err)
 	} else {
 		val = strconv.FormatUint(uint64(ret), 10)
