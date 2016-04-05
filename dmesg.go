@@ -8,12 +8,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"syscall"
+)
+
+import (
+	"github.com/sternix/commands/lib/sysctl"
 )
 
 func init() {
 	log.SetFlags(0)
 	log.SetOutput(os.Stderr)
+	log.SetPrefix("dmesg: ")
 }
 
 // getting from /usr/include/syslog.h
@@ -33,7 +37,7 @@ func isKernSyslogEntry(fac int64) bool {
 func main() {
 	flag.Parse()
 
-	msgbuf, err := syscall.Sysctl("kern.msgbuf")
+	msgbuf, err := sysctl.ByName("kern.msgbuf")
 	if err != nil {
 		log.Fatalf("sysctl kern.msgbuf: %v", err)
 	}
@@ -66,10 +70,9 @@ func main() {
 		fmt.Println(line)
 	}
 
-	/*
-		if *cflag {
-			TODO:implement syscall that can be set a var....
-			kern.msgbuf_clear
+	if *cflag {
+		if err := sysctl.SetUint32("kern.msgbuf_clear",1); err != nil {
+			log.Fatalf("sysctl kern.msgbuf_clear: %v",err)
 		}
-	*/
+	}
 }
