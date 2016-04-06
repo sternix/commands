@@ -124,23 +124,22 @@ func isEnvSet(flg string) (bool, string) {
 	}
 }
 
-func getSysctl(sysctlName string) (val string) {
-	var err error
-	if val, err = sysctl.ByName(sysctlName); err != nil {
+func getSysctl(sysctlName string) string {
+	if val, err := sysctl.ByName(sysctlName); err != nil {
 		log.Fatalf("%s - %v\n", sysctlName, err)
+		return "" //NOTREACHED
+	} else {
+		return val
 	}
-
-	return val
 }
 
-func getSysctlUint32AsString(sysctlName string) (val string) {
+func getSysctlUint32AsString(sysctlName string) string {
 	if ret, err := sysctl.Uint32(sysctlName); err != nil {
 		log.Fatalf("%s - %v", sysctlName, err)
+		return "" //NOTREACHED
 	} else {
-		val = strconv.FormatUint(uint64(ret), 10)
+		return strconv.FormatUint(uint64(ret), 10)
 	}
-
-	return
 }
 
 func getValue(envVar, sysctlName string) string {
