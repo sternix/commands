@@ -135,7 +135,7 @@ func getSysctl(sysctlName string) string {
 
 func getSysctlUint32AsString(sysctlName string) string {
 	if ret, err := sysctl.Uint32(sysctlName); err != nil {
-		log.Fatalf("%s - %v", sysctlName, err)
+		log.Fatalf("%s - %v\n", sysctlName, err)
 		return "" //NOTREACHED
 	} else {
 		return strconv.FormatUint(uint64(ret), 10)
@@ -162,7 +162,11 @@ func getVersion(envVar, sysctlName string) string {
 	if yes, envVal := isEnvSet(envVar); yes {
 		return envVal
 	} else {
-		version := []byte(getSysctl(sysctlName))
+		version, err := sysctl.Raw(sysctlName)
+		if err != nil {
+			log.Fatalf("%s - %v\n", sysctlName, err)
+		}
+
 		for i, r := range version {
 			if r == '\n' || r == '\t' {
 				version[i] = ' '
