@@ -1,6 +1,8 @@
 # commands
-FreeBSD commands written in go language
+FreeBSD commands written in go programming language
 
 Descriptions and ideas taken from FreeBSD source and man pages
 
-Starting from simple and less line commands
+Starting from simple commands
+
+
